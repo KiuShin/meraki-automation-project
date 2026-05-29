@@ -1,0 +1,11 @@
+# Global Transport Layer
+requests>=2.31.0
+
+# config.py - Environment Management
+python-dotenv>=1.0.1
+
+# logger.py - Standard Library Only
+# (No external dependencies required)
+
+# wireless_tele.py - Wireless Telemetry Endpoint Layer
+# (Shares global 'requests' dependency)

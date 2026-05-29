@@ -1,5 +1,4 @@
 import requests
-import os
 
 def get_wireless_latency(target_url, auth_headers):
     """

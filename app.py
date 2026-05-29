@@ -1,6 +1,4 @@
 import requests
-import os
-import json
 # Initialize environment and constants
 from config import HEADERS, BASE_URL
 from logger import  log_structured_health

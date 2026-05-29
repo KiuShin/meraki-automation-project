@@ -1,7 +1,6 @@
 import logging
 import json
 from datetime import datetime
-import os   
 
 # Set up the logger to write to a file
 

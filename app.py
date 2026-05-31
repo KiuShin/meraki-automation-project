@@ -38,26 +38,6 @@ def get_org_id(headers):
     """Fetches the first available Organization ID."""
     data = send_meraki_request("/organizations", headers)
     return data[0]["id"] if data else None
-    
-    
-def get_net_id(org_id, auth_headers):
-	"""Fetches the first available Network ID within the specified Org."""
-	response = requests.get(f"{BASE_URL}/organizations/{org_id}/networks", headers=auth_headers)
-	
-	if response.status_code == 200:
-		networks = response.json()
-		if not networks:
-			print("❌ No networks found in this organization.")
-			return None
-		
-		# Pulling details from the first network
-		net_id = networks[0]["id"]
-		net_name = networks[0]["name"]
-		print(f"✅ Connected to Network: {net_name} (ID: {net_id})")
-		return net_id
-	else:
-		print(f"❌ Failed to fetch Network. Status: {response.status_code}")
-		return None
      
 
 def get_net_id(org_id, headers):
@@ -75,7 +55,7 @@ def get_net_id(org_id, headers):
     else:
         print("❌ No networks found in this organization.")
 
-    return net_id
+    return net_id if net_id else None
 
 # =============================
 # Modules
@@ -93,7 +73,7 @@ def check_device_health(org_id, headers):
     device_status = send_meraki_request(endpoint=f"/organizations/{org_id}/devices/statuses", headers=headers, params=query_params)
     
     print(f"\n--- v1 Org-Wide Device Audit ---")
-    print(f"Total entries found: {len(device_status)}")
+    print(f"Total entries found: {len(device_status)}") if device_status else print("No device data found.")
     
     for device in device_status:
         model = device.get('model', 'N/A')
@@ -119,14 +99,17 @@ def check_device_health(org_id, headers):
             
         #print("-" * 30)
         
-    return device_status   # Return the raw data for logging
+    return device_status if device_status else None   # Return the raw data for logging
     
 # Log structured health data to a file and print alerts
 def audit_org_inventory(org_id, headers):
     """Audits every piece of hardware owned by the Org, regardless of network assignment."""
     
     device_inventory = send_meraki_request(endpoint=f"/organizations/{org_id}/inventory/devices", headers=headers)
-
+    if device_inventory is None:
+        print("No inventory data found.")
+        return []
+    
     print(f"\n--- Global Inventory Audit ({len(device_inventory)} items) ---")
         
     for item in device_inventory:
@@ -154,15 +137,13 @@ if __name__ == "__main__":
     # Main Execution Flow
     my_org_id = get_org_id(HEADERS)
     my_net_id = get_net_id(my_org_id, HEADERS)
-    if my_org_id:
-        # Uncomment below if you want to run health check for the primary network
-        check_device_health(my_org_id, HEADERS)        
+    if my_org_id:    
         #Run log function for structured logging and store in variable
         inventory_data = check_device_health(my_org_id, HEADERS)
         
         if inventory_data:
             log_structured_health(inventory_data)
-            print("\n Audit Log Updated: 'maraki_audit.log'")  # Confirmation of logging
+            print("\n Audit Log Updated: 'meraki_audit.log'")  # Confirmation of logging
          
         # Uncomment below if you want a full hardware audit
         audit_org_inventory(my_org_id, HEADERS)

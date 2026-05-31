@@ -1,14 +1,20 @@
 import logging
+from logging.handlers import RotatingFileHandler
 import json
 from datetime import datetime
 
 # Set up the logger to write to a file
 
+handler = RotatingFileHandler(
+    'meraki_audit.log', maxBytes=5*1024*1024, backupCount=5
+)
 logging.basicConfig(
     filename='maraki_audit.log',
     level=logging.INFO,
     format='%(asctime)s | %(levelname)s | %(message)s'
 )
+
+
 
 def log_structured_health(device_list):
     """
@@ -24,7 +30,7 @@ def log_structured_health(device_list):
             "serial": device.get('serial', 'Unknown Serial'),
             "model": model,
             "status": status,
-            "last_seen": device.get('lastReportedAt'),
+            "last_seen": device.get('lastReportedAt', 'Never'),
             "is_target": "MX68" in str(model)
         }
 
